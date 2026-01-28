@@ -21,6 +21,6 @@ export const createGuestSchema = Joi.object({
   arrivalDay: Joi.when('willStay', {
     is: true,
     then: Joi.string().valid('friday', 'saturday').required(),
-    otherwise: Joi.string().optional(),
+    otherwise: Joi.string().allow(null).optional(),
   }),
 });
