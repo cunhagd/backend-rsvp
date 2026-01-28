@@ -461,8 +461,16 @@
       if (password === ADMIN_PASSWORD) {
         console.log('✅ Senha correta!');
         localStorage.setItem('rsvpAdminAuth', 'true');
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('dashboard').classList.add('visible');
+        
+        const loginPage = document.getElementById('loginPage');
+        const dashboard = document.getElementById('dashboard');
+        
+        console.log('🎯 Escondendo login page...');
+        loginPage.style.display = 'none';
+        
+        console.log('🎯 Mostrando dashboard...');
+        dashboard.style.display = 'block';
+        
         console.log('📊 Carregando dados...');
         loadData();
       } else {
@@ -475,8 +483,13 @@
     function logout() {
       console.log('👋 Fazendo logout...');
       localStorage.removeItem('rsvpAdminAuth');
-      document.getElementById('loginPage').classList.remove('hidden');
-      document.getElementById('dashboard').classList.remove('visible');
+      
+      const loginPage = document.getElementById('loginPage');
+      const dashboard = document.getElementById('dashboard');
+      
+      loginPage.style.display = 'flex';
+      dashboard.style.display = 'none';
+      
       document.getElementById('passwordInput').value = '';
     }
 
@@ -484,11 +497,21 @@
       console.log('🔍 Verificando autenticação...');
       if (localStorage.getItem('rsvpAdminAuth')) {
         console.log('✅ Já autenticado, carregando dashboard...');
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('dashboard').classList.add('visible');
+        
+        const loginPage = document.getElementById('loginPage');
+        const dashboard = document.getElementById('dashboard');
+        
+        loginPage.style.display = 'none';
+        dashboard.style.display = 'block';
+        
         loadData();
       } else {
         console.log('❌ Não autenticado, mostrando login...');
+        const loginPage = document.getElementById('loginPage');
+        const dashboard = document.getElementById('dashboard');
+        
+        loginPage.style.display = 'flex';
+        dashboard.style.display = 'none';
       }
     }
 
