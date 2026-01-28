@@ -6,8 +6,6 @@ const router = Router();
 
 // Criar nova confirmação de presença
 router.post('/guests', async (req: Request, res: Response) => {
-  const client = await query('SELECT * FROM guests WHERE 1=0'); // Para pegar a pool connection
-  
   try {
     const { error, value } = createGuestSchema.validate(req.body);
     
@@ -46,7 +44,8 @@ router.post('/guests', async (req: Request, res: Response) => {
 
     const guestId = guestResult.rows[0].id;
 
-    // Inserir filhos (se houver)
+    // Inserir filhos (se houver) - agora hasChildren é sempre false
+    // então este bloco nunca vai executar, mas mantém para compatibilidade
     if (value.hasChildren && value.children && value.children.length > 0) {
       for (const child of value.children) {
         await query(
@@ -70,7 +69,11 @@ router.post('/guests', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Erro ao criar confirmação:', error);
+    console.error('[POST /guests] Erro:', {
+      message: error instanceof Error ? error.message : 'Erro desconhecido',
+      stack: error instanceof Error ? error.stack : '',
+      body: req.body,
+    });
     res.status(500).json({ 
       error: 'Erro ao confirmar presença. Tente novamente.' 
     });
