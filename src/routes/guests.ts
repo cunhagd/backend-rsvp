@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query } from '../database';
 import { createGuestSchema } from '../schemas/guest';
-import whatsappNotifier from '../services/whatsappNotifier';
+import telegramNotifier from '../services/telegramNotifier';
 
 const router = Router();
 
@@ -60,9 +60,9 @@ router.post('/guests', async (req: Request, res: Response) => {
     const guestId = guestResult.rows[0].id;
     console.log('[POST /guests] ✅ Convidado inserido com sucesso. ID:', guestId);
 
-    // Enviar notificação WhatsApp ao proprietário
-    console.log('[POST /guests] 📤 Enviando notificação WhatsApp...');
-    await whatsappNotifier.notifyNewGuest({
+    // Enviar notificação Telegram ao proprietário
+    console.log('[POST /guests] 📤 Enviando notificação Telegram...');
+    await telegramNotifier.notifyNewGuest({
       name: value.name,
       age: value.age,
       phone: value.phone,
