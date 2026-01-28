@@ -35,6 +35,11 @@ app.use(cors({
 // Servir arquivos estáticos (admin dashboard)
 app.use(express.static('public'));
 
+// Rota explícita para admin
+app.get('/admin', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../public/admin.html'));
+});
+
 // Conectar ao PostgreSQL e rodar migrações
 async function initializeDatabase() {
   try {
