@@ -1,4 +1,5 @@
 import { query } from '../database';
+import aiService from './aiService';
 
 // Algoritmo de Levenshtein Distance (distância edit)
 function levenshteinDistance(str1: string, str2: string): number {
@@ -62,8 +63,9 @@ async function findMatchingExpectedGuest(guestName: string): Promise<{ id: numbe
 
     // Normalizar o nome do convidado que confirmou
     const normalizedGuest = normalizeName(guestName);
+    const expectedNames = result.rows.map(r => r.name);
 
-    // Encontrar o melhor match
+    // Primeiro tentar fuzzy matching
     let bestMatch = null;
     let bestSimilarity = 0;
     const threshold = 0.75; // 75% de similaridade mínima
@@ -84,11 +86,39 @@ async function findMatchingExpectedGuest(guestName: string): Promise<{ id: numbe
       }
     }
 
+    // Se fuzzy matching encontrou um bom match, retornar
     if (bestMatch && bestSimilarity >= threshold) {
-      console.log(`✅ Match encontrado: ${bestMatch.name} (${(bestSimilarity * 100).toFixed(1)}%)`);
+      console.log(`✅ Match fuzzy encontrado: ${bestMatch.name} (${(bestSimilarity * 100).toFixed(1)}%)`);
       return bestMatch;
-    } else if (bestMatch) {
-      console.log(`⚠️  Melhor match: ${bestMatch.name} (${(bestSimilarity * 100).toFixed(1)}%) - Abaixo do threshold`);
+    }
+
+    // Se não, tentar com IA
+    console.log('🤖 Fuzzy match abaixo do threshold, tentando análise com IA...');
+    const aiAnalysis = await aiService.analyzeNameForMatching(guestName, expectedNames);
+
+    if (aiAnalysis.bestMatch && aiAnalysis.confidence >= 0.75) {
+      const matchedExpected = result.rows.find(
+        r => r.name.toLowerCase() === aiAnalysis.bestMatch?.toLowerCase()
+      );
+
+      if (matchedExpected) {
+        console.log(
+          `✅ Match IA encontrado: ${aiAnalysis.bestMatch} (${(aiAnalysis.confidence * 100).toFixed(1)}%) - ${aiAnalysis.explanation}`
+        );
+        return {
+          id: matchedExpected.id,
+          name: matchedExpected.name,
+          similarity: aiAnalysis.confidence,
+        };
+      }
+    }
+
+    if (bestMatch) {
+      console.log(
+        `⚠️  Melhor match: ${bestMatch.name} (${(bestSimilarity * 100).toFixed(1)}%) - Abaixo do threshold`
+      );
+    } else {
+      console.log('⚠️  Nenhum match encontrado');
     }
 
     return null;

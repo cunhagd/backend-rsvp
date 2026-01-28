@@ -3,6 +3,7 @@ import { query } from '../database';
 import { createGuestSchema } from '../schemas/guest';
 import telegramNotifier from '../services/telegramNotifier';
 import { linkGuestToExpected } from '../services/guestMatcher';
+import aiService from '../services/aiService';
 
 const router = Router();
 
@@ -391,6 +392,36 @@ router.delete('/expected-guests', async (req: Request, res: Response) => {
     console.error('Erro ao limpar convidados esperados:', error);
     res.status(500).json({ 
       error: 'Erro ao limpar convidados esperados.' 
+    });
+  }
+});
+
+// Gerar insights com IA
+router.get('/insights', async (req: Request, res: Response) => {
+  try {
+    const statsResult = await query('SELECT * FROM guest_stats');
+    const stats = statsResult.rows[0];
+
+    const insight = await aiService.generateInsights({
+      total_expected: parseInt(stats.total_expected) || 0,
+      total_confirmed: parseInt(stats.total_confirmed) || 0,
+      guests_staying: parseInt(stats.guests_staying) || 0,
+      guests_day_use: parseInt(stats.guests_day_use) || 0,
+    });
+
+    res.json({
+      insight,
+      stats: {
+        total_expected: parseInt(stats.total_expected) || 0,
+        total_confirmed: parseInt(stats.total_confirmed) || 0,
+        guests_staying: parseInt(stats.guests_staying) || 0,
+        guests_day_use: parseInt(stats.guests_day_use) || 0,
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao gerar insights:', error);
+    res.status(500).json({ 
+      error: 'Erro ao gerar insights.' 
     });
   }
 });
