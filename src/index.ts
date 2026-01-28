@@ -1,10 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { connect } from './database';
 import guestRoutes from './routes/guests';
 
-dotenv.config();
+// Carregar .env baseado no NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: path.resolve(__dirname, `../${envFile}`) });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
