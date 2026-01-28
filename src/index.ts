@@ -32,6 +32,9 @@ app.use(cors({
   credentials: true,
 }));
 
+// Servir arquivos estáticos (admin dashboard)
+app.use(express.static('public'));
+
 // Conectar ao PostgreSQL e rodar migrações
 async function initializeDatabase() {
   try {

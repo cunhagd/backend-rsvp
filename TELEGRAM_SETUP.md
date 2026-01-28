@@ -55,8 +55,8 @@ Para não receber mensagens diretas de um estranho, crie um **grupo privado**:
 No Dashboard Railway, adicione 2 variáveis:
 
 ```
-TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-TELEGRAM_CHAT_ID=123456789
+TELEGRAM_BOT_TOKEN=DA
+TELEGRAM_CHAT_ID=5573900770
 ```
 
 Se usar um grupo, o Chat ID será um número negativo:
