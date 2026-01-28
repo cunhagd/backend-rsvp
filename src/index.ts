@@ -76,6 +76,37 @@ async function initializeDatabase() {
       } else {
         console.log('✅ Coluna "phone" já existe');
       }
+
+      // Verificar se tabela 'expected_guests' existe
+      const tableCheckQuery = `
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'expected_guests'
+        );
+      `;
+      
+      const tableResult = await client.query(tableCheckQuery);
+      
+      if (!tableResult.rows[0].exists) {
+        console.log('⚠️  Tabela "expected_guests" não existe, criando...');
+        
+        await client.query(`
+          CREATE TABLE expected_guests (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS idx_expected_guests_name ON expected_guests(name);
+        `);
+        
+        console.log('✅ Tabela "expected_guests" criada com sucesso');
+      } else {
+        console.log('✅ Tabela "expected_guests" já existe');
+      }
     } finally {
       client.release();
     }
