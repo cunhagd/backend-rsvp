@@ -31,12 +31,13 @@ router.post('/guests', async (req: Request, res: Response) => {
 
     // Inserir convidado
     const guestResult = await query(
-      `INSERT INTO guests (name, age, has_children, will_stay, arrival_day) 
-       VALUES ($1, $2, $3, $4, $5) 
+      `INSERT INTO guests (name, age, phone, has_children, will_stay, arrival_day) 
+       VALUES ($1, $2, $3, $4, $5, $6) 
        RETURNING id, name, confirmed_at`,
       [
         value.name,
         value.age,
+        value.phone,
         value.hasChildren,
         value.willStay,
         value.arrivalDay || null,
@@ -49,14 +50,12 @@ router.post('/guests', async (req: Request, res: Response) => {
     if (value.hasChildren && value.children && value.children.length > 0) {
       for (const child of value.children) {
         await query(
-          `INSERT INTO children (guest_id, name, age, will_stay, arrival_day) 
-           VALUES ($1, $2, $3, $4, $5)`,
+          `INSERT INTO children (guest_id, name, age) 
+           VALUES ($1, $2, $3)`,
           [
             guestId,
             child.name,
             child.age,
-            child.willStay,
-            child.arrivalDay || null,
           ]
         );
       }
