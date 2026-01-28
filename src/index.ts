@@ -13,6 +13,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:8080';
 
+console.log('[CORS DEBUG]', {
+  NODE_ENV: process.env.NODE_ENV,
+  envFile,
+  CORS_ORIGIN: `"${CORS_ORIGIN}"`,
+  CORS_ORIGIN_LENGTH: CORS_ORIGIN.length,
+  CORS_ORIGIN_TRIMMED: `"${CORS_ORIGIN.trim()}"`,
+});
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
