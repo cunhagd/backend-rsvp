@@ -450,20 +450,30 @@
     let allGuests = [];
     let filteredGuests = [];
 
+    console.log('🔧 Admin Dashboard iniciando...');
+    console.log('API URL:', API_URL);
+    console.log('Current Origin:', window.location.origin);
+
     function login() {
       const password = document.getElementById('passwordInput').value;
+      console.log('🔐 Tentando login com senha:', password.length + ' caracteres');
+      
       if (password === ADMIN_PASSWORD) {
+        console.log('✅ Senha correta!');
         localStorage.setItem('rsvpAdminAuth', 'true');
         document.getElementById('loginPage').classList.add('hidden');
         document.getElementById('dashboard').classList.add('visible');
+        console.log('📊 Carregando dados...');
         loadData();
       } else {
+        console.log('❌ Senha incorreta!');
         alert('Senha incorreta!');
         document.getElementById('passwordInput').value = '';
       }
     }
 
     function logout() {
+      console.log('👋 Fazendo logout...');
       localStorage.removeItem('rsvpAdminAuth');
       document.getElementById('loginPage').classList.remove('hidden');
       document.getElementById('dashboard').classList.remove('visible');
@@ -471,29 +481,43 @@
     }
 
     function checkAuth() {
+      console.log('🔍 Verificando autenticação...');
       if (localStorage.getItem('rsvpAdminAuth')) {
+        console.log('✅ Já autenticado, carregando dashboard...');
         document.getElementById('loginPage').classList.add('hidden');
         document.getElementById('dashboard').classList.add('visible');
         loadData();
+      } else {
+        console.log('❌ Não autenticado, mostrando login...');
       }
     }
 
     async function loadData() {
       try {
+        console.log('📡 Fazendo fetch para:', `${API_URL}/guests`);
         const response = await fetch(`${API_URL}/guests`);
-        if (!response.ok) throw new Error('Erro ao carregar dados');
+        console.log('📦 Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         
         const data = await response.json();
+        console.log('✅ Dados recebidos:', data);
+        
         allGuests = data.guests || [];
+        console.log('👥 Total de convidados:', allGuests.length);
         
         renderStats(data.stats);
         applyFilters();
       } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
         showError('Erro ao carregar dados: ' + error.message);
       }
     }
 
     function renderStats(stats) {
+      console.log('📊 Renderizando estatísticas:', stats);
       const statsHtml = `
         <div class="stat-card">
           <h3>👥 Total de Convidados</h3>
@@ -520,6 +544,7 @@
     }
 
     function applyFilters() {
+      console.log('🔍 Aplicando filtros...');
       const confirmed = document.getElementById('filterConfirmed').checked;
       const staying = document.getElementById('filterStaying').checked;
       const friday = document.getElementById('filterFriday').checked;
@@ -540,10 +565,12 @@
       }
 
       filteredGuests = filtered;
+      console.log('✅ Filtros aplicados, mostrando:', filtered.length, 'convidados');
       renderTable();
     }
 
     function renderTable() {
+      console.log('📋 Renderizando tabela com', filteredGuests.length, 'convidados');
       const tbody = document.getElementById('confirmedBody');
       
       if (filteredGuests.length === 0) {
@@ -570,6 +597,7 @@
     }
 
     function showError(message) {
+      console.error('⚠️ Erro:', message);
       const errorDiv = document.getElementById('errorMessage');
       errorDiv.innerHTML = `<div class="error">${message}</div>`;
       setTimeout(() => {
@@ -580,11 +608,13 @@
     // Carregar dados a cada 30 segundos (auto-refresh)
     setInterval(() => {
       if (localStorage.getItem('rsvpAdminAuth')) {
+        console.log('🔄 Auto-refreshing dados...');
         loadData();
       }
     }, 30000);
 
     // Inicializar
+    console.log('✨ Inicializando Admin Dashboard');
     checkAuth();
   </script>
 </body>
