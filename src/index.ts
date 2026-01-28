@@ -11,14 +11,16 @@ dotenv.config({ path: path.resolve(__dirname, `../${envFile}`) });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:8080';
+let CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:8080';
+
+// Remover trailing slash do CORS_ORIGIN se existir
+CORS_ORIGIN = CORS_ORIGIN.replace(/\/$/, '');
 
 console.log('[CORS DEBUG]', {
   NODE_ENV: process.env.NODE_ENV,
   envFile,
   CORS_ORIGIN: `"${CORS_ORIGIN}"`,
   CORS_ORIGIN_LENGTH: CORS_ORIGIN.length,
-  CORS_ORIGIN_TRIMMED: `"${CORS_ORIGIN.trim()}"`,
 });
 
 // Middlewares
