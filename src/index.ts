@@ -138,8 +138,16 @@ async function initializeDatabase() {
 
       // Criar/Atualizar view de estatísticas com linking
       console.log('📊 Criando/atualizando view guest_stats...');
+      
+      // Drop e recreate para evitar conflicts de nome de coluna
+      try {
+        await client.query('DROP VIEW IF EXISTS guest_stats CASCADE;');
+      } catch (e) {
+        // View pode não existir
+      }
+      
       await client.query(`
-        CREATE OR REPLACE VIEW guest_stats AS
+        CREATE VIEW guest_stats AS
         SELECT 
           (SELECT COUNT(*) FROM expected_guests) as total_expected,
           COUNT(DISTINCT g.id) as total_confirmed,
