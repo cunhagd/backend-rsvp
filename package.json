@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "ts-node src/migrations/001_create_tables.ts",
+    "migrate:fix": "ts-node src/migrations/002_fix_guests_schema.ts",
     "test": "jest"
   },
   "keywords": [
