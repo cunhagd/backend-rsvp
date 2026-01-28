@@ -119,13 +119,28 @@ router.get('/guests', async (req: Request, res: Response) => {
        ORDER BY g.confirmed_at DESC`
     );
 
+    // Buscar convidados que não confirmaram (estão em expected_guests mas não em guests)
+    const notConfirmedResult = await query(
+      `SELECT eg.id, eg.name, eg.created_at
+       FROM expected_guests eg
+       LEFT JOIN guests g ON LOWER(eg.name) = LOWER(g.name)
+       WHERE g.id IS NULL
+       ORDER BY eg.created_at DESC`
+    );
+
+    console.log('📊 Stats:', stats);
+    console.log('✅ Confirmados:', stats.total_confirmed);
+    console.log('⏳ Não confirmados:', notConfirmedResult.rows.length);
+
     res.json({
       stats: {
-        totalGuests: stats.total_guests,
-        guestWhoWillStay: stats.guests_staying,
-        childrenCount: stats.total_children,
+        total_expected: parseInt(stats.total_expected) || 0,
+        total_confirmed: parseInt(stats.total_confirmed) || 0,
+        guests_staying: parseInt(stats.guests_staying) || 0,
+        guests_day_use: parseInt(stats.guests_day_use) || 0,
       },
       guests: guestsResult.rows,
+      notConfirmed: notConfirmedResult.rows,
     });
   } catch (error) {
     console.error('Erro ao listar confirmações:', error);

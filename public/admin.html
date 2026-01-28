@@ -441,13 +441,12 @@
           <table id="notConfirmedTable">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Email/Info</th>
-                <th>Status</th>
+                <th>Nome</th>
+                <th>Esperado desde</th>
               </tr>
             </thead>
             <tbody id="notConfirmedBody">
-              <tr><td colspan="3" class="empty-state"><p>Todos confirmaram! 🎉</p></td></tr>
+              <tr><td colspan="2" class="empty-state"><p>Carregando...</p></td></tr>
             </tbody>
           </table>
         </div>
@@ -545,9 +544,10 @@
         console.log('✅ Dados recebidos:', data);
         
         allGuests = data.guests || [];
-        console.log('👥 Total de convidados:', allGuests.length);
+        console.log('👥 Total de convidados confirmados:', allGuests.length);
         
         renderStats(data.stats);
+        renderNotConfirmed(data.notConfirmed || []);
         applyFilters();
       } catch (error) {
         console.error('❌ Erro ao carregar dados:', error);
@@ -641,6 +641,23 @@
           </td>
           <td>${new Date(guest.confirmed_at).toLocaleString('pt-BR')}</td>
           <td><button onclick="deleteGuest(${guest.id})" style="background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px;">🗑️ Deletar</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderNotConfirmed(notConfirmed) {
+      console.log('📋 Renderizando não confirmados:', notConfirmed.length);
+      const tbody = document.getElementById('notConfirmedBody');
+      
+      if (!notConfirmed || notConfirmed.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="empty-state"><p>Todos confirmaram! 🎉</p></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = notConfirmed.map(guest => `
+        <tr>
+          <td><strong>${guest.name}</strong></td>
+          <td>${new Date(guest.created_at).toLocaleString('pt-BR')}</td>
         </tr>
       `).join('');
     }
