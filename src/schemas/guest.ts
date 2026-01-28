@@ -18,13 +18,9 @@ export const createGuestSchema = Joi.object({
     otherwise: Joi.array().length(0),
   }),
   willStay: Joi.boolean().required(),
-  arrivalDay: Joi.alternatives().try(
-    Joi.string().valid('friday', 'saturday'),
-    Joi.allow(null)
-  ).optional(),
-}).external(async (obj) => {
-  // Validação customizada: se willStay é true, arrivalDay deve estar presente
-  if (obj.willStay === true && !obj.arrivalDay) {
-    throw new Error('arrivalDay é obrigatório quando willStay é true');
-  }
+  arrivalDay: Joi.when('willStay', {
+    is: true,
+    then: Joi.string().valid('friday', 'saturday').required(),
+    otherwise: Joi.string().allow(null).optional(),
+  }),
 });
