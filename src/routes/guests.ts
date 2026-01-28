@@ -256,4 +256,120 @@ router.delete('/guests/:id', async (req: Request, res: Response) => {
   }
 });
 
+// ========== EXPECTED GUESTS ENDPOINTS ==========
+
+// Listar convidados esperados
+router.get('/expected-guests', async (req: Request, res: Response) => {
+  try {
+    const result = await query(
+      'SELECT id, name, created_at FROM expected_guests ORDER BY name ASC'
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao listar convidados esperados:', error);
+    res.status(500).json({ 
+      error: 'Erro ao listar convidados esperados.' 
+    });
+  }
+});
+
+// Importar convidados esperados em lote
+router.post('/expected-guests/bulk', async (req: Request, res: Response) => {
+  try {
+    const { names } = req.body;
+
+    if (!Array.isArray(names) || names.length === 0) {
+      return res.status(400).json({ 
+        error: 'Envie um array de nomes.' 
+      });
+    }
+
+    console.log(`[POST /expected-guests/bulk] Importando ${names.length} convidados esperados`);
+
+    let inserted = 0;
+    let duplicates = 0;
+    let errors = 0;
+
+    for (const name of names) {
+      if (!name || typeof name !== 'string') {
+        errors++;
+        continue;
+      }
+
+      try {
+        await query(
+          'INSERT INTO expected_guests (name) VALUES ($1)',
+          [name.trim()]
+        );
+        inserted++;
+      } catch (err: any) {
+        if (err.message.includes('duplicate')) {
+          duplicates++;
+        } else {
+          errors++;
+        }
+      }
+    }
+
+    console.log(`✅ Importação concluída: ${inserted} inseridos, ${duplicates} duplicados, ${errors} erros`);
+
+    res.json({
+      message: 'Importação concluída!',
+      stats: {
+        total: names.length,
+        inserted,
+        duplicates,
+        errors,
+      },
+    });
+  } catch (error) {
+    console.error('Erro ao importar convidados esperados:', error);
+    res.status(500).json({ 
+      error: 'Erro ao importar convidados esperados.' 
+    });
+  }
+});
+
+// Deletar convidado esperado
+router.delete('/expected-guests/:id', async (req: Request, res: Response) => {
+  try {
+    const result = await query(
+      'DELETE FROM expected_guests WHERE id = $1 RETURNING id',
+      [req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Convidado esperado não encontrado.' 
+      });
+    }
+
+    res.json({
+      message: 'Convidado esperado removido!',
+    });
+  } catch (error) {
+    console.error('Erro ao deletar convidado esperado:', error);
+    res.status(500).json({ 
+      error: 'Erro ao deletar convidado esperado.' 
+    });
+  }
+});
+
+// Limpar todos os convidados esperados
+router.delete('/expected-guests', async (req: Request, res: Response) => {
+  try {
+    const result = await query('DELETE FROM expected_guests');
+
+    res.json({
+      message: 'Todos os convidados esperados foram removidos!',
+    });
+  } catch (error) {
+    console.error('Erro ao limpar convidados esperados:', error);
+    res.status(500).json({ 
+      error: 'Erro ao limpar convidados esperados.' 
+    });
+  }
+});
+
 export default router;
