@@ -107,6 +107,47 @@ async function initializeDatabase() {
       } else {
         console.log('✅ Tabela "expected_guests" já existe');
       }
+
+      // Verificar se coluna 'expected_guest_id' existe
+      const linkedCheckQuery = `
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_schema = 'public' 
+          AND table_name = 'guests'
+          AND column_name = 'expected_guest_id'
+        );
+      `;
+      
+      const linkedResult = await client.query(linkedCheckQuery);
+      
+      if (!linkedResult.rows[0].exists) {
+        console.log('⚠️  Coluna "expected_guest_id" não existe, adicionando...');
+        
+        await client.query(`
+          ALTER TABLE guests ADD COLUMN IF NOT EXISTS expected_guest_id INTEGER REFERENCES expected_guests(id) ON DELETE SET NULL;
+        `);
+
+        await client.query(`
+          CREATE INDEX IF NOT EXISTS idx_guests_expected_guest_id ON guests(expected_guest_id);
+        `);
+        
+        console.log('✅ Coluna "expected_guest_id" adicionada com sucesso');
+      } else {
+        console.log('✅ Coluna "expected_guest_id" já existe');
+      }
+
+      // Criar/Atualizar view de estatísticas com linking
+      console.log('📊 Criando/atualizando view guest_stats...');
+      await client.query(`
+        CREATE OR REPLACE VIEW guest_stats AS
+        SELECT 
+          (SELECT COUNT(*) FROM expected_guests) as total_expected,
+          COUNT(DISTINCT g.id) as total_confirmed,
+          COUNT(CASE WHEN g.will_stay THEN 1 END) as guests_staying,
+          COUNT(CASE WHEN NOT g.will_stay THEN 1 END) as guests_day_use
+        FROM guests g;
+      `);
+      console.log('✅ View guest_stats atualizada');
     } finally {
       client.release();
     }

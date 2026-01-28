@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { query } from '../database';
 import { createGuestSchema } from '../schemas/guest';
 import telegramNotifier from '../services/telegramNotifier';
+import { linkGuestToExpected } from '../services/guestMatcher';
 
 const router = Router();
 
@@ -69,6 +70,13 @@ router.post('/guests', async (req: Request, res: Response) => {
       willStay: value.willStay,
       arrivalDay: value.arrivalDay,
     });
+
+    // Linkar automaticamente com convidado esperado (fuzzy matching)
+    console.log('[POST /guests] 🔗 Procurando match na lista de esperados...');
+    const linked = await linkGuestToExpected(guestId, value.name);
+    if (linked) {
+      console.log('[POST /guests] ✅ Convidado linkado com sucesso!');
+    }
 
     // Inserir filhos (se houver)
     if (value.hasChildren && value.children && value.children.length > 0) {
